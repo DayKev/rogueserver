@@ -354,6 +354,11 @@ func handleUpdateAll(w http.ResponseWriter, r *http.Request) {
 			httpError(w, r, fmt.Errorf("session out of date: existing playtime is greater"), http.StatusBadRequest)
 			return
 		}
+
+		if !savedata.ValidMigrators(data.System.AppliedMigrators, oldSystem.AppliedMigrators) {
+			httpError(w, r, fmt.Errorf("session out of date: migrators desynced"), http.StatusBadRequest)
+			return
+		}
 	}
 
 	existingSave, err := savedata.GetSession(db.Store, uuid, data.SessionSlotId)
@@ -463,6 +468,11 @@ func handleSystem(w http.ResponseWriter, r *http.Request) {
 
 			if playtime < oldPlaytime {
 				httpError(w, r, fmt.Errorf("session out of date: existing playtime is greater"), http.StatusBadRequest)
+				return
+			}
+
+			if !savedata.ValidMigrators(system.AppliedMigrators, oldSystem.AppliedMigrators) {
+				httpError(w, r, fmt.Errorf("session out of date: migrators desynced"), http.StatusBadRequest)
 				return
 			}
 		}
